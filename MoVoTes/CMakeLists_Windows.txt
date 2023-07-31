@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.1)
+project(ParallelDelaunay)
+
+# Recherche des packages nécessaires (CGAL et TBB)
+find_package(CGAL REQUIRED)
+find_package(TBB REQUIRED)
+include(CGAL_TBB_support) # Includes a module from CGAL
+
+find_package(GMP REQUIRED)
+include_directories(${GMP_INCLUDE_DIRS})
+link_directories(${GMP_LIBRARY_DIRS})
+
+find_package(Qhull CONFIG REQUIRED)
+
+find_package(Eigen3 CONFIG REQUIRED)
+
+# Ajout des bibliothèques et des include directories au projet
+include_directories(${CGAL_INCLUDE_DIRS} ${TBB_INCLUDE_DIRS})
+link_directories(${CGAL_LIBRARY_DIRS} ${TBB_LIBRARY_DIRS})
+
+# /Od: Désactive les optimisations (équivalent à -O0 dans GCC).
+# /O1: Optimise pour la taille (semblable à -Os dans GCC).
+# /O2: Optimise pour la vitesse (semblable à -O2 dans GCC).
+# /Ox: Optimise pour la vitesse maximale avec des optimisations plus agressives (semble proche de -O3 dans GCC, mais pas exactement la même chose).
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox")
+set(CMAKE_CXX_STANDARD 20)
+
+# Trouver et activer OpenMP
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
+# Création de l'exécutable avec le fichier source
+add_executable(parallel_delaunay parallel_delaunay.cpp utile.cpp print_data.cpp modified_voronoi.cpp test_function.cpp)
+
+# Then on all target using TBB, link with CGAL::TBB_support
+# Liaison des bibliothèques nécessaires à l'exécutable
+target_link_libraries(parallel_delaunay PRIVATE CGAL::TBB_support ${GMP_LIBRARIES} Qhull::qhullcpp Qhull::qhull_r Eigen3::Eigen)
