@@ -7,6 +7,10 @@ The code is managed under GNU General Public License v3.0. Everyone is permitted
 
 The original version of the C++ code has been developed by Thibault Maurel Oujia at I2M, Aix-Marseille University to compute the volume cell in parallel using OpenMP for shared memory and compute the divergence and curl of the particle velocity.
 During the JSPS Short-term 2023 Thibault Maurel Oujia implemented parallel computation of the volume using MPI for distributed memory and wavelets on graphs using MPI for distributed memory.
+The implementation of wavelets on graphs is a C++ version of the code originally developed in Python by Keigo Matsuda and Thibault Maurel Oujia during the CTR Summer Program 2022.
+
+
+
 
 
 
