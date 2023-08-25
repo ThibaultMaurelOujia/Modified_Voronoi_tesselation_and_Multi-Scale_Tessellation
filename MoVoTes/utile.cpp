@@ -45,6 +45,8 @@ Config read_config_file(const std::string& filename) {
             }
         } else if (key == "SUFFIXES") {
             iss >> config.POSITION_SUFFIX >> config.VELOCITY_SUFFIX;
+        } else if (key == "OUT_SUFFIXES") {
+            iss >> config.OUT_SUFFIXES;
         } else if (key == "VOLUME") {
             iss >> std::boolalpha >> config.BOOL_VOLUME;
         } else if (key == "DIVERGENCE") {
@@ -352,7 +354,7 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
         max_index = 0;
         for (int i = 0; i < totalSubdomains; ++i) {
             std::vector<std::size_t> index_subcube;
-            read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".index_" + std::to_string(i), index_subcube);
+            read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_" + std::to_string(i), index_subcube);
             for (const auto& index : index_subcube) {
                 if (index > max_index) {
                     max_index = index;
@@ -382,17 +384,18 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
         bool SUCCESS_VOL;
         bool SUCCESS_DIVERGENCE;
         bool SUCCESS_CURL;
-        read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".index_" + std::to_string(i), index_subcube);
+        bool SUCCESS_GRAPH;
+        read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_" + std::to_string(i), index_subcube);
         if (ARG_CONFIG.BOOL_VOLUME_MERGE){
-            SUCCESS_VOL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_" + std::to_string(i), cell_volumes_subcube);
+            SUCCESS_VOL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_" + std::to_string(i), cell_volumes_subcube);
         }
         if (ARG_CONFIG.BOOL_DIVERGENCE_MERGE){
-            SUCCESS_DIVERGENCE = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_x_y_z_" + std::to_string(i), cell_volumes_x_y_z_subcube);
+            SUCCESS_DIVERGENCE = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_x_y_z_" + std::to_string(i), cell_volumes_x_y_z_subcube);
         }
         if (ARG_CONFIG.BOOL_CURL_MERGE){
-            SUCCESS_CURL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_0_z_-y_" + std::to_string(i), cell_volumes_x_subcube);
-            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_-z_0_x_" + std::to_string(i), cell_volumes_y_subcube);
-            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_y_-x_0_" + std::to_string(i), cell_volumes_z_subcube);
+            SUCCESS_CURL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_0_z_-y_" + std::to_string(i), cell_volumes_x_subcube);
+            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_-z_0_x_" + std::to_string(i), cell_volumes_y_subcube);
+            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_y_-x_0_" + std::to_string(i), cell_volumes_z_subcube);
         }
         if (ARG_CONFIG.BOOL_GRAPH_MERGE){
             std::string subdomainNumber = "";
@@ -400,9 +403,9 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
                 subdomainNumber = "_" + std::to_string(i);
             }
             std::string subdirectory = ARG_CONFIG.DATA_PATH.second + "/GW_" + ARG_CONFIG.FILENAME;
-            read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + ".key", key_subcube);
-            read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + ".level", level_subcube);
-            read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + ".merge", merge_subcube);
+            SUCCESS_GRAPH = read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + "." + ARG_CONFIG.OUT_SUFFIXES + "key", key_subcube);
+            read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + "." + ARG_CONFIG.OUT_SUFFIXES + "level", level_subcube);
+            read_int_from_binary_file(subdirectory + "/" + ARG_CONFIG.FILENAME + subdomainNumber + "." + ARG_CONFIG.OUT_SUFFIXES + "merge", merge_subcube);
         }
 
         for (std::size_t j = 0; j < index_subcube.size(); ++j) {
@@ -417,7 +420,7 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
                 cell_volumes_y[index_subcube[j]] = cell_volumes_y_subcube[j];
                 cell_volumes_z[index_subcube[j]] = cell_volumes_z_subcube[j];
             }
-            if (ARG_CONFIG.BOOL_GRAPH_MERGE){
+            if (ARG_CONFIG.BOOL_GRAPH_MERGE && SUCCESS_GRAPH){
                 if (key_subcube[j] < max_index + 1){
                     level[key_subcube[j]] = level_subcube[j];
                     merge[key_subcube[j]] = merge_subcube[j];
@@ -428,19 +431,19 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
 
     // Write the merged data to a file.
     if (ARG_CONFIG.BOOL_VOLUME_MERGE){
-        write_double_array_to_binary_file(cell_volumes, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol");
+        write_double_array_to_binary_file(cell_volumes, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol");
     }
     if (ARG_CONFIG.BOOL_DIVERGENCE_MERGE){
-        write_double_array_to_binary_file(cell_volumes_x_y_z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_x_y_z");
+        write_double_array_to_binary_file(cell_volumes_x_y_z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_x_y_z");
     }
     if (ARG_CONFIG.BOOL_CURL_MERGE){
-        write_double_array_to_binary_file(cell_volumes_x, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_0_z_-y");
-        write_double_array_to_binary_file(cell_volumes_y, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_-z_0_x");
-        write_double_array_to_binary_file(cell_volumes_z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_y_-x_0");
+        write_double_array_to_binary_file(cell_volumes_x, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_0_z_-y");
+        write_double_array_to_binary_file(cell_volumes_y, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_-z_0_x");
+        write_double_array_to_binary_file(cell_volumes_z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_y_-x_0");
     }
     if (ARG_CONFIG.BOOL_GRAPH_MERGE){
-        write_int_array_to_binary_file(level, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".level");
-        write_int_array_to_binary_file(merge, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".merge");
+        write_int_array_to_binary_file(level, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "level");
+        write_int_array_to_binary_file(merge, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "merge");
         // write_double_array_to_binary_file(gvol, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".gvol");
     }
 }
@@ -457,46 +460,46 @@ void computes_quantities(const ArgConfig& ARG_CONFIG) {
     std::vector<double> cell_volumes;
 
     bool SUCCESS;
-    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol", cell_volumes);
+    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol", cell_volumes);
     if (!SUCCESS) return;
     if (ARG_CONFIG.BOOL_DIVERGENCE_WRITE){
         std::vector<double> cell_volumes_x_y_z;
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_x_y_z", cell_volumes_x_y_z);
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_x_y_z", cell_volumes_x_y_z);
         if (!SUCCESS) return;
         std::vector<double> DIV = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_x_y_z, ARG_CONFIG.DELTA_T);
-        write_double_array_to_binary_file(DIV, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".div");
+        write_double_array_to_binary_file(DIV, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "div");
     }
     if (ARG_CONFIG.BOOL_CURL_WRITE){
         std::vector<double> cell_volumes_x;
         std::vector<double> cell_volumes_y;
         std::vector<double> cell_volumes_z;
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_0_z_-y", cell_volumes_x);
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_0_z_-y", cell_volumes_x);
         if (!SUCCESS) return;
         std::vector<double> CURL_X = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_x, ARG_CONFIG.DELTA_T);
-        write_double_array_to_binary_file(CURL_X, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_x");
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_-z_0_x", cell_volumes_y);
+        write_double_array_to_binary_file(CURL_X, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_x");
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_-z_0_x", cell_volumes_y);
         if (!SUCCESS) return;
         std::vector<double> CURL_Y = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_y, ARG_CONFIG.DELTA_T);
-        write_double_array_to_binary_file(CURL_Y, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_y");
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol_y_-x_0", cell_volumes_z);
+        write_double_array_to_binary_file(CURL_Y, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_y");
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_y_-x_0", cell_volumes_z);
         if (!SUCCESS) return;
         std::vector<double> CURL_Z = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_z, ARG_CONFIG.DELTA_T);
-        write_double_array_to_binary_file(CURL_Z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_z");
+        write_double_array_to_binary_file(CURL_Z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_z");
     }
     if (ARG_CONFIG.BOOL_HELICITY_WRITE){
         std::vector<double> CURL_X;
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_x", CURL_X);
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_x", CURL_X);
         if (!SUCCESS) return;
         std::vector<double> CURL_Y;
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_y", CURL_Y);
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_y", CURL_Y);
         if (!SUCCESS) return;
         std::vector<double> CURL_Z;
-        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".curl_z", CURL_Z);
+        SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_z", CURL_Z);
         if (!SUCCESS) return;
         std::vector<Point> VELOCITY;
         read_points_from_binary_file(ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.VELOCITY_SUFFIX, VELOCITY);
         std::vector<double> HEL = compute_discrete_velocity_helicity(CURL_X, CURL_Y, CURL_Z, VELOCITY); 
-        write_double_array_to_binary_file(HEL, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".hel");
+        write_double_array_to_binary_file(HEL, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "hel");
     }
 }
 

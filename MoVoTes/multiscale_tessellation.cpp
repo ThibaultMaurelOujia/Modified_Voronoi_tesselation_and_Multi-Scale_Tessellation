@@ -16,7 +16,7 @@ Graph_Wavelets::Graph_Wavelets(const ArgConfig& ARG_CONFIG, Triangulation& T, co
         T.clear();
         T = Triangulation();
     } else {
-        loadFromBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, Np, Np_Domain, MPI_rank);
+        loadFromBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, ARG_CONFIG.OUT_SUFFIXES, Np, Np_Domain, MPI_rank);
     }
     
     for (int8_t i = 1; i < num_levels; ++i) {
@@ -967,23 +967,23 @@ void Graph_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_levels) {
     std::vector<std::string> signal_extensions;
 
     bool SUCCESS;
-    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".level", level);
-    SUCCESS *= read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".merge", merge);
+    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "level", level);
+    SUCCESS *= read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "merge", merge);
     if (!SUCCESS) return;
 
 
-    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol", volume);
+    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol", volume);
     if (ARG_CONFIG.BOOL_DIVERGENCE){
         signals.push_back(std::vector<double>());
-        read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".div", signals.back());
-        signal_extensions.push_back(".wdiv");
+        read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "div", signals.back());
+        signal_extensions.push_back("." + ARG_CONFIG.OUT_SUFFIXES + "wdiv");
     }
     if (ARG_CONFIG.BOOL_CURL){
         std::vector<std::string> axes{"curl_x", "curl_y", "curl_z"};
         for (const auto& axis : axes) {
             signals.push_back(std::vector<double>());
-            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + axis, signals.back());
-            signal_extensions.push_back(".w" + std::string(axis));
+            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + axis, signals.back());
+            signal_extensions.push_back("." + ARG_CONFIG.OUT_SUFFIXES + "w" + std::string(axis));
         }
     }
 
@@ -1002,12 +1002,15 @@ void Graph_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_levels) {
             if(level[odd_indices] == current_level){
                 size_t even_indices = merge[odd_indices];
                 double volume_sum = volume[even_indices] + volume[odd_indices]; // volume conservation
-
+                
                 for(auto& signal : signals) {
-                    double signal_prediction = (volume[even_indices] * signal[even_indices] + volume[odd_indices] * signal[odd_indices]) / volume_sum;
+                    double signal_projection = (volume[even_indices] * signal[even_indices] + volume[odd_indices] * signal[odd_indices]) / volume_sum; // signal conservation
+                    double signal_prediction = signal_projection;
                     double signal_detail = signal[odd_indices] - signal_prediction;
-                    signal[even_indices] = signal_prediction;
+                    // double signal_detail = (volume[even_indices] * (signal[even_indices] - signal_prediction) + volume[odd_indices] * (signal[odd_indices] - signal_prediction)) / volume_sum; // for symmetry // wrong !
+                    signal[even_indices] = signal_projection;
                     signal[odd_indices] = signal_detail;
+                    // signal[even_indices] += signal[odd_indices] / 2; // lifting scheme !!!!!!! 
                 }
 
                 volume[even_indices] = volume_sum;
@@ -1015,7 +1018,7 @@ void Graph_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_levels) {
         }
     }
 
-    write_double_array_to_binary_file(volume, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wvol_odd");
+    write_double_array_to_binary_file(volume, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wvol_odd");
     for (size_t s = 0; s < signals.size(); ++s) {
         write_double_array_to_binary_file(signals[s], ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + signal_extensions[s]);
     }
@@ -1034,26 +1037,13 @@ void Graph_Inverse_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_lev
     std::vector<std::string> signal_extensions;
 
     bool SUCCESS;
-    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".level", level);
-    SUCCESS *= read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".merge", merge);
+    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "level", level);
+    SUCCESS *= read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "merge", merge);
     if (!SUCCESS) return;
 
     // Read transformed signals from file
-    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wvol_odd", volume);
+    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wvol_odd", volume);
     std::vector<double> volume_even(volume.size(), 0.0);
-    // if (ARG_CONFIG.BOOL_DIVERGENCE){
-    //     signals.push_back(std::vector<double>());
-    //     read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wdiv", signals.back());
-    //     signal_extensions.push_back(".wdiv");
-    // }
-    // if (ARG_CONFIG.BOOL_CURL){
-    //     std::vector<std::string> axes{"wcurl_x", "wcurl_y", "wcurl_z"};
-    //     for (const auto& axis : axes) {
-    //         signals.push_back(std::vector<double>());
-    //         read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + axis, signals.back());
-    //         signal_extensions.push_back(".iw" + std::string(axis));
-    //     }
-    // }
 
     int Np = static_cast<int>(volume.size());
     if (num_levels == -1){
@@ -1069,7 +1059,7 @@ void Graph_Inverse_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_lev
                 double volume_sum = volume[even_indices];
                 volume[even_indices] = volume_sum - volume[odd_indices];
                 volume_even[odd_indices] = volume[even_indices];
-
+                
                 for(auto& signal : signals) {
                     double signal_detail = signal[odd_indices];
                     double signal_prediction = signal[even_indices];
@@ -1081,7 +1071,7 @@ void Graph_Inverse_Wavelet_Transform(const ArgConfig& ARG_CONFIG, int8_t num_lev
     }
 
     // Write original signals to file
-    write_double_array_to_binary_file(volume_even, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wvol_even");
+    write_double_array_to_binary_file(volume_even, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wvol_even");
     for (size_t s = 0; s < signals.size(); ++s) {
         write_double_array_to_binary_file(signals[s], ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + signal_extensions[s]);
     }
@@ -1100,22 +1090,22 @@ void Power_Spectrum(const ArgConfig& ARG_CONFIG, int num_levels) {
     std::vector<std::string> signal_extensions;
 
     bool SUCCESS;
-    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".level", level);
+    SUCCESS = read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "level", level);
     if (!SUCCESS) return;
 
     // Read transformed signals from file
-    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wvol_odd", volume_odd);
-    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wvol_even", volume_even);
+    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wvol_odd", volume_odd);
+    read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wvol_even", volume_even);
     if (ARG_CONFIG.BOOL_DIVERGENCE){
         signals.push_back(std::vector<double>());
-        read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".wdiv", signals.back());
-        signal_extensions.push_back(".wps_div");
+        read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "wdiv", signals.back());
+        signal_extensions.push_back("." + ARG_CONFIG.OUT_SUFFIXES + "wps_div");
     }
     if (ARG_CONFIG.BOOL_CURL){
         for (const auto& axis : {"wcurl_x", "wcurl_y", "wcurl_z"}) {
             signals.push_back(std::vector<double>());
-            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + axis, signals.back());
-            signal_extensions.push_back(".wps_" + std::string(axis));
+            read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + axis, signals.back());
+            signal_extensions.push_back("." + ARG_CONFIG.OUT_SUFFIXES + "wps_" + std::string(axis));
         }
     }
 
@@ -1150,9 +1140,12 @@ void Power_Spectrum(const ArgConfig& ARG_CONFIG, int num_levels) {
     }
 
     for (size_t i = 0; i < volume_odd.size(); i++) {
-        scalefactor[i] = std::sqrt((volume_odd[i] + volume_even[i]) * volume_odd[i] / volume_even[i]);
+        scalefactor[i] = std::sqrt((volume_odd[i] + volume_even[i]) * volume_odd[i] / volume_even[i]); // !!!
+        // scalefactor[i] = std::pow(2, level[i]/2) * std::pow(1+std::pow(volume_odd[i] / volume_even[i], 2.0), 1.0/2.0);
+        // scalefactor[i] = 1.0; // no scale factor
+        // scalefactor[i] = std::pow((volume_odd[i] + volume_even[i]) * volume_odd[i] / volume_even[i], 1.0/3.0);
     }
-
+    
     std::vector<double> kv(num_levels-1, 0.0); 
     std::transform(volume_scale.begin(), volume_scale.end(), kv.begin(), [](double vs) { return PI / vs; });
 
@@ -1205,7 +1198,7 @@ void Power_Spectrum(const ArgConfig& ARG_CONFIG, int num_levels) {
         }
         write_double_array_to_binary_file(E2_L2, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + signal_extensions[s]);
     }
-    write_double_array_to_binary_file(kv, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".kv");
+    write_double_array_to_binary_file(kv, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "kv");
 }
 
 
@@ -1323,7 +1316,7 @@ void Graph_Wavelets::printAdjacentCellDetails(size_t index) const {
 *******************************************************************/
 
 
-void Graph_Wavelets::writeToBinary(const std::string& directory, const std::string& filename, int number) {
+void Graph_Wavelets::writeToBinary(const std::string& directory, const std::string& filename, const std::string& OUT_SUFFIXES, int number) {
 
     std::cout << "WRITE DATA : " << directory + "/GW_" + filename << std::endl;
     
@@ -1343,12 +1336,12 @@ void Graph_Wavelets::writeToBinary(const std::string& directory, const std::stri
         std::filesystem::create_directory(subdirectory);
     }
 
-    std::ofstream key_file(subdirectory + "/" + filename + subdomainNumber + ".key", std::ios::binary);
-    std::ofstream vol_file(subdirectory + "/" + filename + subdomainNumber + ".vol", std::ios::binary);
-    std::ofstream level_file(subdirectory + "/" + filename + subdomainNumber + ".level", std::ios::binary);
-    std::ofstream merge_file(subdirectory + "/" + filename + subdomainNumber + ".merge", std::ios::binary);
-    std::ofstream neigh_val_file(subdirectory + "/" + filename + subdomainNumber + ".neigh_val", std::ios::binary);
-    std::ofstream neigh_ptr_file(subdirectory + "/" + filename + subdomainNumber + ".neigh_ptr", std::ios::binary);
+    std::ofstream key_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "key", std::ios::binary);
+    std::ofstream vol_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "vol", std::ios::binary);
+    std::ofstream level_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "level", std::ios::binary);
+    std::ofstream merge_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "merge", std::ios::binary);
+    std::ofstream neigh_val_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "neigh_val", std::ios::binary);
+    std::ofstream neigh_ptr_file(subdirectory + "/" + filename + subdomainNumber + "." + OUT_SUFFIXES + "neigh_ptr", std::ios::binary);
 
     // Extraire toutes les clés dans un vecteur
     std::vector<size_t> keys;
@@ -1398,7 +1391,7 @@ void Graph_Wavelets::writeToBinary(const std::string& directory, const std::stri
 }
 
 
-void Graph_Wavelets::loadFromBinary(const std::string& directory, const std::string& filename, size_t Np, size_t Np_Domain, int number) {
+void Graph_Wavelets::loadFromBinary(const std::string& directory, const std::string& filename, const std::string& OUT_SUFFIXES, size_t Np, size_t Np_Domain, int number) {
 
     std::cout << "READ DATA : " << directory + "/GW_" + filename << std::endl;
 
@@ -1412,12 +1405,12 @@ void Graph_Wavelets::loadFromBinary(const std::string& directory, const std::str
     }
 
     // Ouvrir les fichiers binaires pour la lecture
-    std::ifstream key_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".key", std::ios::binary);
-    std::ifstream vol_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".vol", std::ios::binary);
-    std::ifstream level_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".level", std::ios::binary);
-    std::ifstream merge_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".merge", std::ios::binary);
-    std::ifstream neigh_val_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".neigh_val", std::ios::binary);
-    std::ifstream neigh_ptr_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + ".neigh_ptr", std::ios::binary);
+    std::ifstream key_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "key", std::ios::binary);
+    std::ifstream vol_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "vol", std::ios::binary);
+    std::ifstream level_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "level", std::ios::binary);
+    std::ifstream merge_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "merge", std::ios::binary);
+    std::ifstream neigh_val_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "neigh_val", std::ios::binary);
+    std::ifstream neigh_ptr_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainNumber + "." + OUT_SUFFIXES + "neigh_ptr", std::ios::binary);
 
     // Vérifier que les fichiers ont été ouverts correctement
     if (!key_file) {
@@ -1501,7 +1494,7 @@ void Graph_Wavelets::loadFromBinary(const std::string& directory, const std::str
     
     for(int subdomainNumber = 0; subdomainNumber < MPI_size; ++subdomainNumber) {
         std::string subdomainStr = "_" + std::to_string(subdomainNumber);
-        std::ifstream key_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainStr + ".key", std::ios::binary);
+        std::ifstream key_file(directory + "/GW_" + filename + "_LVL0/" + filename + "_LVL0" + subdomainStr + "." + OUT_SUFFIXES + "key", std::ios::binary);
 
         size_t key;
         while(key_file.read(reinterpret_cast<char*>(&key), sizeof(size_t))) {

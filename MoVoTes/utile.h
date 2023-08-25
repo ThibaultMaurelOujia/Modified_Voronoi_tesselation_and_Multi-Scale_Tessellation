@@ -35,6 +35,7 @@ struct Config {
     std::vector<std::vector<std::string>> FILENAMES; // names of files in each directory
     std::string POSITION_SUFFIX;
     std::string VELOCITY_SUFFIX;
+    std::string OUT_SUFFIXES;
     bool BOOL_VOLUME;
     bool BOOL_DIVERGENCE;
     bool BOOL_CURL;
@@ -64,6 +65,7 @@ struct ArgConfig {
     std::string FILENAME; // name of files in the directory
     std::string POSITION_SUFFIX;
     std::string VELOCITY_SUFFIX;
+    std::string OUT_SUFFIXES;
     bool BOOL_VOLUME;
     bool BOOL_DIVERGENCE;
     bool BOOL_CURL;

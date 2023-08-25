@@ -185,10 +185,10 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             }
             tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
             cell_volumes = tessellation.get_cells_volumes(Np_Domain);
-            write_original_indicies_to_binary_file(P_with_indices_periodized_subcube, Np_Domain, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".index_" + std::to_string(subdomainNumber));
-            write_double_array_to_binary_file(cell_volumes, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_" + std::to_string(subdomainNumber));
+            write_original_indicies_to_binary_file(P_with_indices_periodized_subcube, Np_Domain, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_" + std::to_string(subdomainNumber));
+            write_double_array_to_binary_file(cell_volumes, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_" + std::to_string(subdomainNumber));
         }
-
+        
         
         if (ARG_CONFIG.BOOL_DIVERGENCE){
             // MPI_Barrier(MPI_COMM_WORLD);
@@ -203,7 +203,7 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>().swap(P_x_y_z_with_indices_periodized_subcube);
             tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
             cell_volumes_x_y_z = tessellation.get_cells_volumes(Np_Domain);
-            write_double_array_to_binary_file(cell_volumes_x_y_z, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_x_y_z_" + std::to_string(subdomainNumber));
+            write_double_array_to_binary_file(cell_volumes_x_y_z, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_x_y_z_" + std::to_string(subdomainNumber));
             std::vector<double>().swap(cell_volumes_x_y_z);
         }
         
@@ -222,7 +222,7 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>().swap(P_x_with_indices_periodized_subcube);
             tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
             cell_volumes_x = tessellation.get_cells_volumes(Np_Domain);
-            write_double_array_to_binary_file(cell_volumes_x, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_0_z_-y_" + std::to_string(subdomainNumber));
+            write_double_array_to_binary_file(cell_volumes_x, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_0_z_-y_" + std::to_string(subdomainNumber));
             std::vector<double>().swap(cell_volumes_x);
 
 
@@ -235,7 +235,7 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>().swap(P_y_with_indices_periodized_subcube);
             tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
             cell_volumes_y = tessellation.get_cells_volumes(Np_Domain);
-            write_double_array_to_binary_file(cell_volumes_y, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_-z_0_x_" + std::to_string(subdomainNumber));
+            write_double_array_to_binary_file(cell_volumes_y, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_-z_0_x_" + std::to_string(subdomainNumber));
             std::vector<double>().swap(cell_volumes_y);
 
 
@@ -248,7 +248,7 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>().swap(P_z_with_indices_periodized_subcube);
             tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
             cell_volumes_z = tessellation.get_cells_volumes(Np_Domain);
-            write_double_array_to_binary_file(cell_volumes_z, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_y_-x_0_" + std::to_string(subdomainNumber));
+            write_double_array_to_binary_file(cell_volumes_z, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_y_-x_0_" + std::to_string(subdomainNumber));
             std::vector<double>().swap(cell_volumes_z);
         }
 
@@ -303,10 +303,10 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
         MPI_Barrier(MPI_COMM_WORLD);
         
         if (MPI_size == 1 && (ARG_CONFIG.SUBDOMAINS == -1 || ARG_CONFIG.SUBDOMAINS == 0 || ARG_CONFIG.SUBDOMAINS == 1)) {
-            graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME);
+            graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, ARG_CONFIG.OUT_SUFFIXES);
         } else {
             std::string filename = ARG_CONFIG.FILENAME + (num_levels == 0 ? "_LVL0" : "");
-            graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, filename, subdomainNumber);
+            graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, filename, ARG_CONFIG.OUT_SUFFIXES, subdomainNumber);
             // graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, subdomainNumber);
         }
 
@@ -383,7 +383,7 @@ bool updateGlobalIndicesGlobalProcess(std::vector<int16_t>& GlobalIndices_Global
         // Security for reading data problem
         if(Np != displs[MPI_size-1] + sendcounts[MPI_size-1] && (ARG_CONFIG.SUBDOMAINS == -1 || ARG_CONFIG.SUBDOMAINS == 0 || ARG_CONFIG.SUBDOMAINS == 1)) {
             std::cout << "ERROR POINT:" << Np << "!=" << displs[MPI_size-1] + sendcounts[MPI_size-1] << std::endl;
-            write_original_indicies_to_binary_file(P_with_indices_periodized_subcube, Np_Domain, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".index_error_" + std::to_string(subdomainNumber));
+            write_original_indicies_to_binary_file(P_with_indices_periodized_subcube, Np_Domain, ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_error_" + std::to_string(subdomainNumber));
             MPI_Barrier(MPI_COMM_WORLD);
 
             if (MPI_rank == 0) {
@@ -391,7 +391,7 @@ bool updateGlobalIndicesGlobalProcess(std::vector<int16_t>& GlobalIndices_Global
 
                 for (int rank = 0; rank < MPI_size; ++rank) {
                     std::vector<size_t> indices_from_file;
-                    std::string file_to_read = ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".index_error_" + std::to_string(rank);
+                    std::string file_to_read = ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_error_" + std::to_string(rank);
                     
                     if(read_int_from_binary_file(file_to_read, indices_from_file)) {
                         all_data.insert(all_data.end(), indices_from_file.begin(), indices_from_file.end());
@@ -597,9 +597,9 @@ void ifLOAD_GRAPH(const ArgConfig& ARG_CONFIG) {
     std::vector<double> cell_volumes_rank;
 
     bool SUCCESS;
-    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".vol", cell_volumes);
+    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol", cell_volumes);
     if (!SUCCESS) return;
-    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + ".vol_" + std::to_string(MPI_rank), cell_volumes_rank);
+    SUCCESS = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_" + std::to_string(MPI_rank), cell_volumes_rank);
     if (!SUCCESS) return;
     
     int Np = cell_volumes.size();
@@ -619,7 +619,7 @@ void ifLOAD_GRAPH(const ArgConfig& ARG_CONFIG) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     
-    graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, MPI_rank);
+    graphWavelets.writeToBinary(ARG_CONFIG.DATA_PATH.second, ARG_CONFIG.FILENAME, ARG_CONFIG.OUT_SUFFIXES, MPI_rank);
 
     std::cout << "END GRAPH-WAVELETS" << std::endl;
     std::cout << "_____________________________" << std::endl;

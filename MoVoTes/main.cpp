@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             std::cout << std::endl;
     }
     
-    std::cout << "Position suffix: " << CONFIG.POSITION_SUFFIX << ", Velicity suffix: " << CONFIG.VELOCITY_SUFFIX << std::endl;
+    std::cout << "Position suffix: " << CONFIG.POSITION_SUFFIX << ", Velicity suffix: " << CONFIG.VELOCITY_SUFFIX << ", Out suffix: " << CONFIG.OUT_SUFFIXES << std::endl;
 
     std::cout << std::endl << "Volume: " << CONFIG.BOOL_VOLUME << std::endl;
     std::cout << "Divergence: " << CONFIG.BOOL_DIVERGENCE << std::endl;
@@ -108,13 +108,13 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Skip Delaunay, Volume and Graph: " << CONFIG.BOOL_SKIP_DELAUNAY_VOLUME_GRAPH << std::endl;
 
-    std::cout << "Volume Merge: " << CONFIG.BOOL_VOLUME_MERGE << std::endl;
-    std::cout << "Divergence Merge: " << CONFIG.BOOL_DIVERGENCE_MERGE << std::endl;
-    std::cout << "Curl Merge: " << CONFIG.BOOL_CURL_MERGE << std::endl;
-    std::cout << "Graph Merge: " << CONFIG.BOOL_GRAPH_MERGE << std::endl;
-    std::cout << "Volume Merge: " << CONFIG.BOOL_DIVERGENCE_WRITE << std::endl;
-    std::cout << "Divergence Merge: " << CONFIG.BOOL_CURL_WRITE << std::endl;
-    std::cout << "Curl Merge: " << CONFIG.BOOL_HELICITY_WRITE << std::endl << std::endl;
+    std::cout << "Merge Volume: " << CONFIG.BOOL_VOLUME_MERGE << std::endl;
+    std::cout << "Merge Volume for Divergence: " << CONFIG.BOOL_DIVERGENCE_MERGE << std::endl;
+    std::cout << "Merge Volume for Curl: " << CONFIG.BOOL_CURL_MERGE << std::endl;
+    std::cout << "Merge Graph: " << CONFIG.BOOL_GRAPH_MERGE << std::endl;
+    std::cout << "Compute Divergence: " << CONFIG.BOOL_DIVERGENCE_WRITE << std::endl;
+    std::cout << "Compute Curl: " << CONFIG.BOOL_CURL_WRITE << std::endl;
+    std::cout << "Compute Helicity: " << CONFIG.BOOL_HELICITY_WRITE << std::endl << std::endl;
 
     std::cout << "Subdomains: " << CONFIG.SUBDOMAINS << std::endl;
     std::cout << "Load Graph: " << CONFIG.LOAD_GRAPH << std::endl;
@@ -141,12 +141,10 @@ int main(int argc, char *argv[]) {
     int totalSubdomains = cubeRoot * cubeRoot * cubeRoot;
 
     // Print the number of processes
-    if (MPI_rank == 0) {
-        if (CONFIG.SUBDOMAINS == -1 || CONFIG.SUBDOMAINS == 0 || CONFIG.SUBDOMAINS == 1) {
-            std::cout << "Number of processes: " << MPI_size << "  ||  Number of sub-domains: " << totalSubdomains << std::endl;
-        } else {
-            std::cout << "Number of processes: " << MPI_size << "  ||  Number of sub-domains: " << CONFIG.SUBDOMAINS << std::endl;
-        }
+    if (CONFIG.SUBDOMAINS == -1 || CONFIG.SUBDOMAINS == 0 || CONFIG.SUBDOMAINS == 1) {
+        std::cout << "Number of processes: " << MPI_size << "  ||  Number of sub-domains: " << totalSubdomains << std::endl;
+    } else {
+        std::cout << "Number of processes: " << MPI_size << "  ||  Number of sub-domains: " << CONFIG.SUBDOMAINS << std::endl;
     }
 
     // Calculate the number of tasks for each process
@@ -181,6 +179,7 @@ int main(int argc, char *argv[]) {
     ArgConfig ARG_CONFIG;
     ARG_CONFIG.POSITION_SUFFIX = CONFIG.POSITION_SUFFIX;
     ARG_CONFIG.VELOCITY_SUFFIX = CONFIG.VELOCITY_SUFFIX;
+    ARG_CONFIG.OUT_SUFFIXES = CONFIG.OUT_SUFFIXES;
     ARG_CONFIG.BOOL_VOLUME = CONFIG.BOOL_VOLUME;
     ARG_CONFIG.BOOL_DIVERGENCE = CONFIG.BOOL_DIVERGENCE;
     ARG_CONFIG.BOOL_CURL = CONFIG.BOOL_CURL;
@@ -300,6 +299,34 @@ int main(int argc, char *argv[]) {
 
 
 
+// GitHub:
+
+
+// git clone git@github.com:ThibaultMaurelOujia/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation.git
+
+// cd Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation
+
+// git add .
+// git commit -m "Suppression de test.txt"
+
+// git push origin master
+
+
+// git remote -v
+
+
+
+
+// mpiexec -n 1 ./parallel_delaunay_multiscale ../config_1eN.txt
+
+
+
+
+
+
+
+
+
 // Profiling:
 
 
@@ -358,22 +385,6 @@ cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 
 
-
-
-
-
-    // MPI_Barrier(MPI_COMM_WORLD);
-    // int TIMETIMEIME = 1;
-    // auto start = std::chrono::high_resolution_clock::now();
-    // auto end = start + std::chrono::seconds(TIMETIMEIME);
-    // auto duration_totalduration_total = std::chrono::duration_cast<std::chrono::milliseconds>(start - start_time_total).count();
-    // std::cout << "TIME: " << duration_totalduration_total / 1000. << " s" << std::endl << std::endl;
-    // while (std::chrono::high_resolution_clock::now() < end) {
-    //     // Busy wait
-    // } // !!!!!!!!!!!!!!!!!!!
-
-
-    // std::exit(EXIT_FAILURE);
 
 
 

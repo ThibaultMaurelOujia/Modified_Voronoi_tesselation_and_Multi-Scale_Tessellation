@@ -36,8 +36,8 @@ public:
 
     Graph_Wavelets(const ArgConfig& ARG_CONFIG, Triangulation& T, const std::vector<double>& cell_volumes, std::vector<int16_t>& _GlobalIndices_GlobalProcess, size_t Np, size_t Np_Domain, int8_t num_levels, size_t none_periodic = -1);
 
-    void writeToBinary(const std::string& directory, const std::string& filename, int number = -1);
-    void loadFromBinary(const std::string& directory, const std::string& filename, size_t Np, size_t Np_Domain, int number = -1);
+    void writeToBinary(const std::string& directory, const std::string& filename, const std::string& OUT_SUFFIXES, int number = -1);
+    void loadFromBinary(const std::string& directory, const std::string& filename, const std::string& OUT_SUFFIXES, size_t Np, size_t Np_Domain, int number = -1);
 
     std::set<size_t> cells_indices;
     std::set<size_t> send_indices_local;
