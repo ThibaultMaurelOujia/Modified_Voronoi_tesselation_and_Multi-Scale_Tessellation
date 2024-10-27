@@ -34,13 +34,14 @@ This code is developed to be built and run on **Linux** and **macOS** machines. 
 
 
 
-## References
 
-- Thibault Maurel Oujia, “On the Particle Dynamics in Fully Developed Turbulence: Tessellation, Multiresolution and Machine Learning Methods.”
-- K. Matsuda et al., “Multiresolution analysis of inertial particle tessellations for clustering dynamics,” Proceedings of the Summer Program, Center for Turbulence Research, Stanford University, 2022.
-- Thibault Maurel–Oujia, Keigo Matsuda, and Kai Schneider, “Computing differential operators of the particle velocity in moving particle clouds using tessellations,” Journal of Computational Physics, vol. 498, 112658, 2024.
+# References
 
+- Thibault Maurel Oujia, *On the Particle Dynamics in Fully Developed Turbulence: Tessellation, Multiresolution and Machine Learning Methods*. Ph.D. Thesis.
 
+- Keigo Matsuda, Kai Schneider, Thibault Maurel Oujia, Jacob West, Suhas Jain, and Kazuki Maeda, "Multiresolution analysis of inertial particle tessellations for clustering dynamics," in *Proceedings of the Summer Program*, Center for Turbulence Research, Stanford University, 2022.
+
+- Thibault Maurel–Oujia, Keigo Matsuda, and Kai Schneider, "Computing differential operators of the particle velocity in moving particle clouds using tessellations," *Journal of Computational Physics*, vol. 498, pp. 112658, 2024.
 
 
 
