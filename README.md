@@ -75,7 +75,7 @@ cmake --build . --config Release
 After building the project, you can run the executable:
 
 ```bash
-./parallel_delaunay_multiscale
+mpiexec -n 8 ./parallel_delaunay_multiscale ../config_***.txt
 ```
 
 This command will execute the application using the default configuration and input data specified in the code.

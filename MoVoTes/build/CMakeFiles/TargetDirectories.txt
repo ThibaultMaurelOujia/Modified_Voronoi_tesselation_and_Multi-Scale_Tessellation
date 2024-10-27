@@ -1,0 +1,3 @@
+/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/parallel_delaunay_multiscale.dir
+/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/edit_cache.dir
+/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/rebuild_cache.dir

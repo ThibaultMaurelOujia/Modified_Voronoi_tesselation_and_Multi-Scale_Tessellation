@@ -75,6 +75,13 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
         generate_points_with_indices_in_two_pi_cube(FILENAME_Np, P_with_indices);
         compute_particle_velocity_test_function(P_with_indices, V_with_indices);
 
+        // Write positions and velocities to files
+        std::filesystem::create_directories(ARG_CONFIG.DATA_PATH.first); 
+        std::string pos_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.POSITION_SUFFIX;
+        std::string vel_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.VELOCITY_SUFFIX;
+        write_points_with_indices_to_binary_file(P_with_indices, pos_filename);
+        write_points_to_binary_file(V_with_indices, vel_filename);
+
         Np = static_cast<int>(P_with_indices.size());
 
         std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>> P_with_indices_periodized = periodize_points(P_with_indices, ARG_CONFIG.SLICE_SIZE, ARG_CONFIG.DOMAIN_SIZE);
