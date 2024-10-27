@@ -34,6 +34,62 @@ This code is developed to be built and run on **Linux** and **macOS** machines. 
 
 
 
+Voici la section “Compilation and Execution” de votre README.md révisée pour une meilleure clarté et formatée correctement en Markdown :
+
+## Compilation and Execution
+
+To compile and run the code in **Release** mode, follow these steps:
+
+### Step 1: Clone the Repository
+
+First, clone the repository to your local machine using Git:
+
+```bash
+git clone git@github.com:ThibaultMaurelOujia/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation.git
+```
+
+### Step 2: Build the Project
+
+Navigate to the project directory and create a new build directory:
+
+```bash
+cd Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation
+mkdir build
+cd build
+```
+
+Configure the project with CMake for a Release build:
+
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
+Compile the project:
+
+```bash
+cmake --build . --config Release
+```
+
+### Step 3: Run the Application
+
+After building the project, you can run the executable:
+
+```bash
+./parallel_delaunay_multiscale
+```
+
+This command will execute the application using the default configuration and input data specified in the code.
+
+
+
+
+
+
+
+
+
+
+
 
 # References
 
