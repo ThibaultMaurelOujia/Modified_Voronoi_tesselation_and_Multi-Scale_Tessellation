@@ -76,7 +76,7 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
         compute_particle_velocity_test_function(P_with_indices, V_with_indices);
 
         // Write positions and velocities to files
-        std::filesystem::create_directories(ARG_CONFIG.DATA_PATH.first); 
+        std::filesystem::create_directories(ARG_CONFIG.DATA_PATH.first);
         std::string pos_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.POSITION_SUFFIX;
         std::string vel_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.VELOCITY_SUFFIX;
         write_points_with_indices_to_binary_file(P_with_indices, pos_filename);
@@ -259,6 +259,57 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
             std::vector<double>().swap(cell_volumes_z);
         }
 
+        
+        bool has_velocity_gradient_components = false;
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                if (ARG_CONFIG.velocity_gradient_tensor_components[i][j]) {
+                    has_velocity_gradient_components = true;
+                    break;
+                }
+            }
+            if (has_velocity_gradient_components) break;
+        }
+
+        if (has_velocity_gradient_components) {
+            std::cout << "Calcul des composantes du tenseur du gradient de vitesse" << std::endl;
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    if (ARG_CONFIG.velocity_gradient_tensor_components[i][j]) {
+                        std::cout << "Calcul de du" << component_to_string(i) << "/d" << component_to_string(j) << std::endl;
+
+                        // Advect particles accordingly
+                        std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>> P_advected_with_indices;
+                        advect_particles_component(
+                            P_with_indices_periodized_subcube,
+                            V_with_indices_periodized_subcube,
+                            ARG_CONFIG.DELTA_T,
+                            i,
+                            j,
+                            P_advected_with_indices
+                        );
+
+                        // Compute the new volume
+                        tessellation.store_gravity_centers_and_indices(T, P_advected_with_indices);
+                        std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>().swap(P_advected_with_indices);
+                        tessellation.compute_volume_modified_voronoi_cells(-1, true, exact_volume, Np_Domain);
+                        std::vector<double> cell_volumes_component = tessellation.get_cells_volumes(Np_Domain);
+
+                        // Write the volumes to a file
+                        std::string filename = ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." +
+                            ARG_CONFIG.OUT_SUFFIXES + "vol_du" + component_to_string(i) + "_d" + component_to_string(j) +
+                            "_" + std::to_string(subdomainNumber);
+                        write_double_array_to_binary_file(cell_volumes_component, filename);
+                        std::vector<double>().swap(cell_volumes_component);
+                    }
+                }
+            }
+        }
+        
+        
+        
+        
+        
 
         // if (ARG_CONFIG.BOOL_TEST_RANDOM){
         //     // MPI_Barrier(MPI_COMM_WORLD);

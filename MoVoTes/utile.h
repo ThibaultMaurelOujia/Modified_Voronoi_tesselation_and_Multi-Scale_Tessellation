@@ -45,9 +45,11 @@ struct Config {
     bool BOOL_VOLUME_MERGE;
     bool BOOL_DIVERGENCE_MERGE;
     bool BOOL_CURL_MERGE;
+    bool BOOL_TENSOR_MERGE;
     bool BOOL_GRAPH_MERGE;
     bool BOOL_DIVERGENCE_WRITE;
     bool BOOL_CURL_WRITE;
+    bool BOOL_TENSOR_WRITE;
     bool BOOL_HELICITY_WRITE;
     double DELTA_T; 
     double SLICE_SIZE;
@@ -57,6 +59,7 @@ struct Config {
     std::tuple<double, double, double, double, double, double> DOMAIN_SIZE;
     bool BOOL_TEST_RANDOM;
     bool BOOL_SEQUENTIAL;
+    bool velocity_gradient_tensor_components[3][3];
 };
 
 
@@ -75,9 +78,11 @@ struct ArgConfig {
     bool BOOL_VOLUME_MERGE;
     bool BOOL_DIVERGENCE_MERGE;
     bool BOOL_CURL_MERGE;
+    bool BOOL_TENSOR_MERGE;
     bool BOOL_GRAPH_MERGE;
     bool BOOL_DIVERGENCE_WRITE;
     bool BOOL_CURL_WRITE;
+    bool BOOL_TENSOR_WRITE;
     bool BOOL_HELICITY_WRITE;
     double DELTA_T; 
     double SLICE_SIZE;
@@ -87,6 +92,7 @@ struct ArgConfig {
     std::tuple<double, double, double, double, double, double> DOMAIN_SIZE;
     bool BOOL_TEST_RANDOM;
     bool BOOL_SEQUENTIAL;
+    bool velocity_gradient_tensor_components[3][3];
 };
 
 
@@ -142,6 +148,8 @@ void advect_particles(const std::vector<std::pair<Point, std::pair<std::size_t, 
 void advect_particles_v_perp_x(const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& T_A, const std::vector<Point>& T_B, double DT, std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& result);
 void advect_particles_v_perp_y(const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& T_A, const std::vector<Point>& T_B, double DT, std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& result);
 void advect_particles_v_perp_z(const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& T_A, const std::vector<Point>& T_B, double DT, std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& result);
+void advect_particles_component(const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& T_A, const std::vector<Point>& T_B, double Delta_t, int i, int j, std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& result);
+std::string component_to_string(int index);
 
 std::vector<double> compute_discrete_velocity_divergence(const std::vector<double>& cell_volumes, const std::vector<double>& cell_volumes_x_y_z, double DT);
 std::vector<double> compute_discrete_velocity_helicity(const std::vector<double>& CURL_X, const std::vector<double>& CURL_Y, const std::vector<double>& CURL_Z, const std::vector<Point>& VELOCITY);

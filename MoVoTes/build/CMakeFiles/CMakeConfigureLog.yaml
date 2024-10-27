@@ -823,3 +823,167 @@ events:
         
       exitCode: 2
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:12 (find_package)"
+    description: "The MPI test test_mpi for C in mode normal"
+    directories:
+      source: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-zvsMcy"
+      binary: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-zvsMcy"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk"
+    buildResult:
+      variable: "MPI_RESULT_C_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-zvsMcy'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_60f9f/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_60f9f.dir/build.make CMakeFiles/cmTC_60f9f.dir/build
+        Building C object CMakeFiles/cmTC_60f9f.dir/test_mpi.c.o
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc  -isystem /opt/homebrew/Cellar/open-mpi/5.0.3_1/include -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -MD -MT CMakeFiles/cmTC_60f9f.dir/test_mpi.c.o -MF CMakeFiles/cmTC_60f9f.dir/test_mpi.c.o.d -o CMakeFiles/cmTC_60f9f.dir/test_mpi.c.o -c "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-zvsMcy/test_mpi.c"
+        Linking C executable cmTC_60f9f
+        /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E cmake_link_script CMakeFiles/cmTC_60f9f.dir/link.txt --verbose=1
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc  -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_60f9f.dir/test_mpi.c.o -o cmTC_60f9f  /opt/homebrew/Cellar/open-mpi/5.0.3_1/lib/libmpi.dylib
+        ld: warning: reexported library with install name '/opt/homebrew/opt/llvm/lib/libunwind.1.dylib' found at '/opt/homebrew/Cellar/llvm/18.1.8/lib/libunwind.1.0.dylib' couldn't be matched with any parent library and will be linked directly
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:12 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-ain9ss"
+      binary: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-ain9ss"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-ain9ss'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_391bf/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_391bf.dir/build.make CMakeFiles/cmTC_391bf.dir/build
+        Building CXX object CMakeFiles/cmTC_391bf.dir/test_mpi.cpp.o
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  -isystem /opt/homebrew/Cellar/open-mpi/5.0.3_1/include -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -MD -MT CMakeFiles/cmTC_391bf.dir/test_mpi.cpp.o -MF CMakeFiles/cmTC_391bf.dir/test_mpi.cpp.o.d -o CMakeFiles/cmTC_391bf.dir/test_mpi.cpp.o -c "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-ain9ss/test_mpi.cpp"
+        Linking CXX executable cmTC_391bf
+        /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E cmake_link_script CMakeFiles/cmTC_391bf.dir/link.txt --verbose=1
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_391bf.dir/test_mpi.cpp.o -o cmTC_391bf  /opt/homebrew/Cellar/open-mpi/5.0.3_1/lib/libmpi.dylib
+        ld: warning: reexported library with install name '/opt/homebrew/opt/llvm/lib/libunwind.1.dylib' found at '/opt/homebrew/Cellar/llvm/18.1.8/lib/libunwind.1.0.dylib' couldn't be matched with any parent library and will be linked directly
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindMPI.cmake:1672 (_MPI_try_staged_settings)"
+      - "CMakeLists.txt:12 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-7gtGxQ"
+      binary: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-7gtGxQ"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-7gtGxQ'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_5cd61/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_5cd61.dir/build.make CMakeFiles/cmTC_5cd61.dir/build
+        Building CXX object CMakeFiles/cmTC_5cd61.dir/test_mpi.cpp.o
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  -isystem /opt/homebrew/Cellar/open-mpi/5.0.3_1/include -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -MD -MT CMakeFiles/cmTC_5cd61.dir/test_mpi.cpp.o -MF CMakeFiles/cmTC_5cd61.dir/test_mpi.cpp.o.d -o CMakeFiles/cmTC_5cd61.dir/test_mpi.cpp.o -c "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-7gtGxQ/test_mpi.cpp"
+        Linking CXX executable cmTC_5cd61
+        /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5cd61.dir/link.txt --verbose=1
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_5cd61.dir/test_mpi.cpp.o -o cmTC_5cd61  /opt/homebrew/Cellar/open-mpi/5.0.3_1/lib/libmpi.dylib
+        ld: warning: reexported library with install name '/opt/homebrew/opt/llvm/lib/libunwind.1.dylib' found at '/opt/homebrew/Cellar/llvm/18.1.8/lib/libunwind.1.0.dylib' couldn't be matched with any parent library and will be linked directly
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindOpenMP.cmake:421 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindOpenMP.cmake:561 (_OPENMP_GET_SPEC_DATE)"
+      - "CMakeLists.txt:59 (find_package)"
+    description: "Detecting C OpenMP version"
+    directories:
+      source: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-d8Pfky"
+      binary: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-d8Pfky"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk"
+    buildResult:
+      variable: "OpenMP_SPECTEST_C_"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-d8Pfky'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_4ed92/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_4ed92.dir/build.make CMakeFiles/cmTC_4ed92.dir/build
+        Building C object CMakeFiles/cmTC_4ed92.dir/OpenMPCheckVersion.c.o
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -fopenmp -Wno-unused-command-line-argument -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -MD -MT CMakeFiles/cmTC_4ed92.dir/OpenMPCheckVersion.c.o -MF CMakeFiles/cmTC_4ed92.dir/OpenMPCheckVersion.c.o.d -o CMakeFiles/cmTC_4ed92.dir/OpenMPCheckVersion.c.o -c "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-d8Pfky/OpenMPCheckVersion.c"
+        cc: error: unsupported option '-fopenmp'
+        make[1]: *** [CMakeFiles/cmTC_4ed92.dir/OpenMPCheckVersion.c.o] Error 1
+        make: *** [cmTC_4ed92/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindOpenMP.cmake:421 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.29.6/share/cmake/Modules/FindOpenMP.cmake:561 (_OPENMP_GET_SPEC_DATE)"
+      - "CMakeLists.txt:59 (find_package)"
+    description: "Detecting CXX OpenMP version"
+    directories:
+      source: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-k9JF0V"
+      binary: "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-k9JF0V"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL;/opt/homebrew/lib/cmake/CGAL"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk"
+    buildResult:
+      variable: "OpenMP_SPECTEST_CXX_"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-k9JF0V'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_f6c49/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_f6c49.dir/build.make CMakeFiles/cmTC_f6c49.dir/build
+        Building CXX object CMakeFiles/cmTC_f6c49.dir/OpenMPCheckVersion.cpp.o
+        /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -fopenmp -Wno-unused-command-line-argument -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -MD -MT CMakeFiles/cmTC_f6c49.dir/OpenMPCheckVersion.cpp.o -MF CMakeFiles/cmTC_f6c49.dir/OpenMPCheckVersion.cpp.o.d -o CMakeFiles/cmTC_f6c49.dir/OpenMPCheckVersion.cpp.o -c "/Users/moli/Document/Parallel Tessellation/Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation/MoVoTes/build/CMakeFiles/CMakeScratch/TryCompile-k9JF0V/OpenMPCheckVersion.cpp"
+        c++: error: unsupported option '-fopenmp'
+        make[1]: *** [CMakeFiles/cmTC_f6c49.dir/OpenMPCheckVersion.cpp.o] Error 1
+        make: *** [cmTC_f6c49/fast] Error 2
+        
+      exitCode: 2
+...

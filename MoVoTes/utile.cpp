@@ -65,12 +65,16 @@ Config read_config_file(const std::string& filename) {
             iss >> std::boolalpha >> config.BOOL_DIVERGENCE_MERGE;
         } else if (key == "CURL_MERGE") {
             iss >> std::boolalpha >> config.BOOL_CURL_MERGE;
+        } else if (key == "TENSOR_MERGE") {
+            iss >> std::boolalpha >> config.BOOL_TENSOR_MERGE;
         } else if (key == "GRAPH_MERGE") {
             iss >> std::boolalpha >> config.BOOL_GRAPH_MERGE;
         } else if (key == "DIVERGENCE_WRITE") {
             iss >> std::boolalpha >> config.BOOL_DIVERGENCE_WRITE;
         } else if (key == "CURL_WRITE") {
             iss >> std::boolalpha >> config.BOOL_CURL_WRITE;
+        } else if (key == "TENSOR_WRITE") {
+            iss >> std::boolalpha >> config.BOOL_TENSOR_WRITE;
         } else if (key == "HELICITY_WRITE") {
             iss >> std::boolalpha >> config.BOOL_HELICITY_WRITE;
         } else if (key == "SUBDOMAINS") {
@@ -113,6 +117,27 @@ Config read_config_file(const std::string& filename) {
             iss >> std::boolalpha >> config.BOOL_TEST_RANDOM;
         } else if (key == "SEQUENTIAL") {
             iss >> std::boolalpha >> config.BOOL_SEQUENTIAL;
+        } else if (key == "VELOCITY_GRADIENT_TENSOR_COMPONENTS") {
+            for (int i = 0; i < 3; ++i) {
+                if (!std::getline(file, line)) {
+                    throw std::runtime_error("Erreur: manque de lignes dans VELOCITY_GRADIENT_TENSOR_COMPONENTS.");
+                }
+                std::istringstream tensor_iss(line);
+                for (int j = 0; j < 3; ++j) {
+                    int value;
+                    if (!(tensor_iss >> value)) {
+                        throw std::runtime_error("Erreur: format incorrect dans VELOCITY_GRADIENT_TENSOR_COMPONENTS.");
+                    }
+                    if (value != 0 && value != 1) {
+                        throw std::runtime_error("Erreur: les valeurs dans VELOCITY_GRADIENT_TENSOR_COMPONENTS doivent être 0 ou 1.");
+                    }
+                    config.velocity_gradient_tensor_components[i][j] = static_cast<bool>(value);
+                }
+            }
+            // Lire la fin de la section
+            if (!std::getline(file, line) || line != "END_VELOCITY_GRADIENT_TENSOR_COMPONENTS") {
+                throw std::runtime_error("Erreur: fin de VELOCITY_GRADIENT_TENSOR_COMPONENTS manquante.");
+            }
         }
     }
 
@@ -373,7 +398,20 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
 
     std::vector<std::size_t> level(max_index + 1, 0.0);
     std::vector<std::size_t> merge(max_index + 1, 0.0);
-
+    
+    std::map<std::string, std::vector<double>> tensor_volumes;
+    
+    // Initialiser les volumes pour chaque composante du tenseur
+    if (ARG_CONFIG.BOOL_TENSOR_MERGE) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                if (ARG_CONFIG.velocity_gradient_tensor_components[i][j]) {
+                    std::string key = "du" + component_to_string(i) + "_d" + component_to_string(j);
+                    tensor_volumes[key] = std::vector<double>(max_index + 1, 0.0);
+                }
+            }
+        }
+    }
 
     // Proceed as before.
     for (int i = 0; i < totalSubdomains; ++i) {
@@ -385,6 +423,7 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
         bool SUCCESS_DIVERGENCE;
         bool SUCCESS_CURL;
         bool SUCCESS_GRAPH;
+        bool SUCCESS_TENSOR;
         read_int_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "index_" + std::to_string(i), index_subcube);
         if (ARG_CONFIG.BOOL_VOLUME_MERGE){
             SUCCESS_VOL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_" + std::to_string(i), cell_volumes_subcube);
@@ -396,6 +435,21 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
             SUCCESS_CURL = read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_0_z_-y_" + std::to_string(i), cell_volumes_x_subcube);
             read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_-z_0_x_" + std::to_string(i), cell_volumes_y_subcube);
             read_double_array_from_binary_file(ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "vol_y_-x_0_" + std::to_string(i), cell_volumes_z_subcube);
+        }
+        if (ARG_CONFIG.BOOL_TENSOR_MERGE){
+            // Lire les volumes pour chaque composante du tenseur
+            for (auto& pair : tensor_volumes) {
+                std::string key = pair.first;
+                std::vector<double> volumes_subcube;
+                std::string filename = ARG_CONFIG.DATA_PATH.second + "/subcube/" + ARG_CONFIG.FILENAME + "." +
+                    ARG_CONFIG.OUT_SUFFIXES + "vol_" + key + "_" + std::to_string(i);
+                SUCCESS_TENSOR = read_double_array_from_binary_file(filename, volumes_subcube);
+                if (SUCCESS_TENSOR) {
+                    for (std::size_t j = 0; j < index_subcube.size(); ++j) {
+                        pair.second[index_subcube[j]] = volumes_subcube[j];
+                    }
+                }
+            }
         }
         if (ARG_CONFIG.BOOL_GRAPH_MERGE){
             std::string subdomainNumber = "";
@@ -446,6 +500,15 @@ void merge_data(const ArgConfig& ARG_CONFIG, int totalSubdomains, std::size_t ma
         write_int_array_to_binary_file(merge, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "merge");
         // write_double_array_to_binary_file(gvol, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + ".gvol");
     }
+    if (ARG_CONFIG.BOOL_TENSOR_MERGE){
+        for (const auto& pair : tensor_volumes) {
+            std::string key = pair.first;
+            std::vector<double> volumes = pair.second;
+            std::string filename = ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." +
+                ARG_CONFIG.OUT_SUFFIXES + "vol_" + key;
+            write_double_array_to_binary_file(volumes, filename);
+        }
+    }
 }
 
 
@@ -485,6 +548,23 @@ void computes_quantities(const ArgConfig& ARG_CONFIG) {
         if (!SUCCESS) return;
         std::vector<double> CURL_Z = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_z, ARG_CONFIG.DELTA_T);
         write_double_array_to_binary_file(CURL_Z, ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." + ARG_CONFIG.OUT_SUFFIXES + "curl_z");
+    }
+    if (ARG_CONFIG.BOOL_TENSOR_WRITE) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                if (ARG_CONFIG.velocity_gradient_tensor_components[i][j]) {
+                    std::string filename = ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." +
+                        ARG_CONFIG.OUT_SUFFIXES + "vol_du" + component_to_string(i) + "_d" + component_to_string(j);
+                    std::vector<double> cell_volumes_component;
+                    SUCCESS = read_double_array_from_binary_file(filename, cell_volumes_component);
+                    if (!SUCCESS) return;
+                    std::vector<double> TENSOR_COMPONENT = compute_discrete_velocity_divergence(cell_volumes, cell_volumes_component, ARG_CONFIG.DELTA_T);
+                    std::string tensor_filename = ARG_CONFIG.DATA_PATH.second + "/" + ARG_CONFIG.FILENAME + "." +
+                        ARG_CONFIG.OUT_SUFFIXES + "tensor_du" + component_to_string(i) + "_d" + component_to_string(j);
+                    write_double_array_to_binary_file(TENSOR_COMPONENT, tensor_filename);
+                }
+            }
+        }
     }
     if (ARG_CONFIG.BOOL_HELICITY_WRITE){
         std::vector<double> CURL_X;
@@ -954,6 +1034,65 @@ void advect_particles_v_perp_z(const std::vector<std::pair<Point, std::pair<std:
 
         Point new_point(x_new, y_new, z_new);
         result.push_back(std::make_pair(new_point, std::make_pair(index_local, index_global)));
+    }
+}
+
+
+void advect_particles_component(
+    const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& T_A,
+    const std::vector<Point>& T_B,
+    double Delta_t,
+    int i,
+    int j,
+    std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& result
+) {
+    if (T_A.size() != T_B.size()) {
+        throw std::invalid_argument("Les deux tableaux de points doivent avoir la même taille");
+    }
+
+    result.clear();
+    result.reserve(T_A.size());
+
+    for (std::size_t k = 0; k < T_A.size(); ++k) {
+        const Point& point_A = T_A[k].first; // Position initiale
+        const Point& point_B = T_B[k];       // Vitesse
+        std::size_t index_local = T_A[k].second.first;
+        std::size_t index_global = T_A[k].second.second;
+
+        double x_new = point_A.x();
+        double y_new = point_A.y();
+        double z_new = point_A.z();
+
+        // Obtenir la composante de vitesse v_i
+        double v_i;
+        if (i == 0) v_i = point_B.x();
+        else if (i == 1) v_i = point_B.y();
+        else if (i == 2) v_i = point_B.z();
+        else throw std::invalid_argument("Indice i invalide pour la composante de vitesse");
+
+        // Appliquer l'advection sur la coordonnée j
+        if (j == 0) {
+            x_new += Delta_t * v_i;
+        } else if (j == 1) {
+            y_new += Delta_t * v_i;
+        } else if (j == 2) {
+            z_new += Delta_t * v_i;
+        } else {
+            throw std::invalid_argument("Indice j invalide pour la coordonnée");
+        }
+
+        Point new_point(x_new, y_new, z_new);
+        result.push_back(std::make_pair(new_point, std::make_pair(index_local, index_global)));
+    }
+}
+
+
+std::string component_to_string(int index) {
+    switch (index) {
+        case 0: return "x";
+        case 1: return "y";
+        case 2: return "z";
+        default: return "?";
     }
 }
 

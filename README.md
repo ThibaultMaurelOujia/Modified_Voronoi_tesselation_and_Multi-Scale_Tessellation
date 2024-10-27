@@ -72,14 +72,13 @@ cmake --build . --config Release
 
 ### Step 3: Run the Application
 
-After building the project, you can run the executable:
+After building the project, you can run the executable in different ways:
 
-```bash
-mpiexec -n 8 ./parallel_delaunay_multiscale ../config_***.txt
-```
+- **Local Execution:** `./parallel_delaunay_multiscale`
+- **Using MPI on multiple processors:** `mpiexec -n 8 ./parallel_delaunay_multiscale ../config_example.txt`
+- **Rebuild and Run for Quick Testing:** `clear && cmake --build . --config Release && mpiexec -n 1 ./parallel_delaunay_multiscale ../config_example.txt`
 
-This command will execute the application using the default configuration and input data specified in the code.
-
+Replace `config_example.txt` with your specific configuration file as needed.
 
 
 
