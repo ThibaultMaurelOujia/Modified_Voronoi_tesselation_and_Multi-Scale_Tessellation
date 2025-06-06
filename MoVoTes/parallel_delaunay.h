@@ -9,13 +9,23 @@
 
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Delaunay_triangulation_cell_base_3.h>
 #include <CGAL/point_generators_3.h>
 #include <CGAL/Triangulation_vertex_base_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_data_structure_2.h>
+#include <CGAL/point_generators_2.h>
+#include <CGAL/Triangulation_face_base_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+
+
+
 #include <tbb/global_control.h>
+
 
 #include "utile.h"
 #include "print_data.h"

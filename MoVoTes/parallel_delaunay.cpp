@@ -307,9 +307,6 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
         }
         
         
-        
-        
-        
 
         // if (ARG_CONFIG.BOOL_TEST_RANDOM){
         //     // MPI_Barrier(MPI_COMM_WORLD);
@@ -385,6 +382,128 @@ bool parallel_delaunay_multiscale(const ArgConfig& ARG_CONFIG, int subdomainNumb
 
     return true;
 }
+
+
+
+
+
+
+
+
+
+
+bool parallel_delaunay_multiscale_2D(const ArgConfig& ARG_CONFIG, int subdomainNumber, int totalSubdomains) {
+
+    std::cout << "\n\n\n\n";
+    auto start_time_total = std::chrono::high_resolution_clock::now();
+
+
+    // omp_set_max_active_levels(1); // Activating interlocking parallelism
+    int num_threads;
+    #pragma omp parallel
+    {
+    #pragma omp single
+        {
+            num_threads = omp_get_num_threads();
+            std::cout << "ACTIVE THREADS: " << num_threads << std::endl;
+        }
+    }
+    tbb::global_control c(tbb::global_control::max_allowed_parallelism, num_threads);
+
+    #ifdef CGAL_LINKED_WITH_TBB
+        std::cout << "CGAL_LINKED_WITH_TBB is defined." << std::endl;
+    #else
+        std::cout << "CGAL_LINKED_WITH_TBB is NOT defined." << std::endl;
+    #endif // CGAL_LINKED_WITH_TBB
+
+
+    int MPI_rank, MPI_size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+
+    // Define types for 2D
+    typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+    // Delaunay T2
+    typedef CGAL::Triangulation_data_structure_2<
+        // CGAL::Triangulation_vertex_base_2<K>,
+        // CGAL::Triangulation_vertex_base_with_info_2<std::size_t, K>,
+        CGAL::Triangulation_vertex_base_with_info_2<std::pair<std::size_t, std::size_t>, K>,
+        CGAL::Triangulation_face_base_2<K>
+    >                               Tds;
+    typedef CGAL::Delaunay_triangulation_2<K, Tds>              Triangulation;
+    // typedef Triangulation::Point                                Point_2D;
+
+
+    std::cout << "\n\n";
+
+
+    /*******************************************************************
+    *                            Load data                             *
+    *******************************************************************/
+
+
+    std::cout << "START LOAD DATA" << std::endl;
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_periodized_subcube;
+    std::vector<Point_2D> V_with_indices_periodized_subcube;
+    int Np = 0;
+    int Np_Domain = 0;
+    int FILENAME_Np;
+    if (ARG_CONFIG.BOOL_TEST_RANDOM) {
+        try {
+            FILENAME_Np = std::stod(ARG_CONFIG.FILENAME);
+        } catch (std::invalid_argument const &e) {
+            std::cout << "Bad input: std::invalid_argument thrown" << '\n';
+            return false;
+        } catch (std::out_of_range const &e) {
+            std::cout << "Integer overflow: std::out_of_range thrown" << '\n';
+            return false;
+        }
+        std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices;
+        std::vector<Point_2D> V_with_indices;
+        generate_points_with_indices_in_two_pi_square(FILENAME_Np, P_with_indices); // !!!
+        compute_particle_velocity_test_function_2D(P_with_indices, V_with_indices); // !!!
+
+        // Write positions and velocities to files
+        std::filesystem::create_directories(ARG_CONFIG.DATA_PATH.first);
+        std::string pos_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.POSITION_SUFFIX;
+        std::string vel_filename = ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME + ARG_CONFIG.VELOCITY_SUFFIX;
+        write_points_with_indices_to_binary_file_2D(P_with_indices, pos_filename);
+        write_points_to_binary_file_2D(V_with_indices, vel_filename);
+
+        Np = static_cast<int>(P_with_indices.size());
+
+        std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_periodized = periodize_points_2D(P_with_indices, ARG_CONFIG.SLICE_SIZE, ARG_CONFIG.DOMAIN_SIZE); // !!!
+        std::vector<Point_2D> V_with_indices_periodized = periodize_velocity_2D(P_with_indices, V_with_indices, ARG_CONFIG.SLICE_SIZE, ARG_CONFIG.DOMAIN_SIZE); // !!!
+        std::cout << "Np = " << static_cast<int>(P_with_indices.size()) << " | Np periodized = " << static_cast<int>(P_with_indices_periodized.size()) << std::endl;
+
+        std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>().swap(P_with_indices);
+        std::vector<Point_2D>().swap(V_with_indices);
+
+        std::tie(P_with_indices_periodized_subcube, V_with_indices_periodized_subcube, Np_Domain) = extract_subsquare_points(P_with_indices_periodized, V_with_indices_periodized, subdomainNumber, totalSubdomains, ARG_CONFIG.SLICE_SIZE, ARG_CONFIG.DOMAIN_SIZE); // !!!
+        int Np_Domain_extended = static_cast<int>(P_with_indices_periodized_subcube.size());
+        std::cout << "Np sub-cube = " << Np_Domain << " | Np sub-cube slice = " << Np_Domain_extended << std::endl;
+
+        std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>().swap(P_with_indices_periodized);
+        std::vector<Point_2D>().swap(V_with_indices_periodized);
+    } else {
+        std::tie(P_with_indices_periodized_subcube, V_with_indices_periodized_subcube, Np_Domain, Np) = read_points_velocity_with_indices_from_binary_file_periodize_extract_subsquare(ARG_CONFIG.DATA_PATH.first + "/" + ARG_CONFIG.FILENAME, ARG_CONFIG.POSITION_SUFFIX, ARG_CONFIG.VELOCITY_SUFFIX, subdomainNumber, totalSubdomains, ARG_CONFIG.SLICE_SIZE, ARG_CONFIG.DOMAIN_SIZE); // !!!
+        std::cout << "Np = " << Np << " | Np sub-cube = " << Np_Domain << " | Np sub-cube slice = " << static_cast<int>(P_with_indices_periodized_subcube.size()) << std::endl;
+        if (Np == 0) return false;
+    }
+
+    // Rest of the code with similar modifications...
+
+    return true;
+}
+
+
+
+
+
+
+
 
 
 

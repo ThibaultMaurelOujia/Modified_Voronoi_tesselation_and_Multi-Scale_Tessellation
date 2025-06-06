@@ -173,6 +173,27 @@ void write_points_to_binary_file(const std::vector<Point>& points, const std::st
 }
 
 
+void write_points_to_binary_file_2D(const std::vector<Point_2D>& points, const std::string& filename) {
+    std::ofstream output_file(filename, std::ios::binary);
+
+    std::cout << "WRITE DATA IN : " << filename << std::endl;
+
+    if (!output_file) {
+        std::cerr << "Erreur lors de l'ouverture du fichier " << filename << std::endl;
+        return;
+    }
+
+    for (const auto& point : points) {
+        double x = point.x();
+        double y = point.y();
+        output_file.write(reinterpret_cast<const char*>(&x), sizeof(double));
+        output_file.write(reinterpret_cast<const char*>(&y), sizeof(double));
+    }
+
+    output_file.close();
+}
+
+
 void write_points_with_indices_to_binary_file(const std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>& points_with_indices, const std::string& filename) {
     std::ofstream output_file(filename, std::ios::binary);
 
@@ -191,6 +212,34 @@ void write_points_with_indices_to_binary_file(const std::vector<std::pair<Point,
         output_file.write(reinterpret_cast<const char*>(&x), sizeof(double));
         output_file.write(reinterpret_cast<const char*>(&y), sizeof(double));
         output_file.write(reinterpret_cast<const char*>(&z), sizeof(double));
+    }
+
+    output_file.close();
+}
+
+
+void write_points_with_indices_to_binary_file_2D(const std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& points_with_indices, const std::string& filename) {
+    std::ofstream output_file(filename, std::ios::binary);
+
+    std::cout << "WRITE DATA IN : " << filename << std::endl;
+
+    if (!output_file) {
+        std::cerr << "Erreur lors de l'ouverture du fichier " << filename << std::endl;
+        return;
+    }
+
+    for (const auto& point_with_index : points_with_indices) {
+        const Point_2D& point = point_with_index.first;
+        double x = point.x();
+        double y = point.y();
+        output_file.write(reinterpret_cast<const char*>(&x), sizeof(double));
+        output_file.write(reinterpret_cast<const char*>(&y), sizeof(double));
+        
+        // Écrire les indices si nécessaire
+        std::size_t idx1 = point_with_index.second.first;
+        std::size_t idx2 = point_with_index.second.second;
+        output_file.write(reinterpret_cast<const char*>(&idx1), sizeof(std::size_t));
+        output_file.write(reinterpret_cast<const char*>(&idx2), sizeof(std::size_t));
     }
 
     output_file.close();
@@ -628,6 +677,21 @@ void generate_points_with_indices_in_two_pi_cube(int num_points, std::vector<std
 }
 
 
+void generate_points_with_indices_in_two_pi_square(int num_points, std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& points_with_indices) {
+    CGAL::Random_points_in_square_2<Point_2D> rnd(1.0);
+
+    std::cout << "RANDOM POINTS WITH INDICES IN TWO PI SQUARE" << std::endl;
+
+    points_with_indices.reserve(num_points);
+    for (std::size_t i = 0; i != num_points; ++i) {
+        Point_2D p = *rnd++;
+        double x = p.x() * TWO_PI / 2 + TWO_PI / 2;
+        double y = p.y() * TWO_PI / 2 + TWO_PI / 2;
+        points_with_indices.push_back(std::make_pair(Point_2D(x, y), std::make_pair(i, i)));
+    }
+}
+
+
 /*******************************************************************
 *					           PERIODIZE       					   *
 *******************************************************************/
@@ -686,6 +750,61 @@ std::vector<Point> periodize_velocity(const std::vector<std::pair<Point, std::pa
                             shifted_point.z() >= std::get<4>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.z() <= std::get<5>(DOMAIN_SIZE) + SLICE_SIZE) {
                             periodized_velocity.push_back(V_with_indices[point_index_pair.second.first]);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    return periodized_velocity;
+}
+
+
+std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> periodize_points_2D(const std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& P_with_indices, const double SLICE_SIZE, const std::tuple<double, double, double, double, double, double>& DOMAIN_SIZE) {
+
+    std::cout << "PERIODIZE POINTS IN 2D" << std::endl;
+
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> periodized_points(P_with_indices);
+
+    std::size_t next_index = P_with_indices.size();
+
+    std::array<int, 3> range = { -1, 0, 1 };
+    for (int i : range) {
+        for (int j : range) {
+            if (abs(i) + abs(j) != 0) {
+                for (const auto& point_index_pair : P_with_indices) {
+                    Point_2D shifted_point = Point_2D(point_index_pair.first.x() + i * TWO_PI, point_index_pair.first.y() + j * TWO_PI);
+
+                    if (shifted_point.x() >= std::get<0>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.x() <= std::get<1>(DOMAIN_SIZE) + SLICE_SIZE &&
+                        shifted_point.y() >= std::get<2>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.y() <= std::get<3>(DOMAIN_SIZE) + SLICE_SIZE) {
+                        periodized_points.push_back(std::make_pair(shifted_point, std::make_pair(next_index, point_index_pair.second.first)));
+                        ++next_index;
+                    }
+                }
+            }
+        }
+    }
+
+    return periodized_points;
+}
+
+
+std::vector<Point_2D> periodize_velocity_2D(const std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& P_with_indices, const std::vector<Point_2D>& V_with_indices, const double SLICE_SIZE, const std::tuple<double, double, double, double, double, double>& DOMAIN_SIZE) {
+
+    std::cout << "PERIODIZE VELOCITY IN 2D" << std::endl;
+   
+    std::vector<Point_2D> periodized_velocity(V_with_indices);
+
+    std::array<int, 3> range = { -1, 0, 1 };
+    for (int i : range) {
+        for (int j : range) {
+            if (abs(i) + abs(j) != 0) {
+                for (const auto& point_index_pair : P_with_indices) {
+                    Point_2D shifted_point = Point_2D(point_index_pair.first.x() + i * TWO_PI, point_index_pair.first.y() + j * TWO_PI);
+
+                    if (shifted_point.x() >= std::get<0>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.x() <= std::get<1>(DOMAIN_SIZE) + SLICE_SIZE &&
+                        shifted_point.y() >= std::get<2>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.y() <= std::get<3>(DOMAIN_SIZE) + SLICE_SIZE) {
+                        periodized_velocity.push_back(V_with_indices[point_index_pair.second.first]);
                     }
                 }
             }
@@ -760,6 +879,71 @@ std::tuple<std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>, s
     }
 
     return std::make_tuple(P_with_indices_periodized_subcube, V_with_indices_periodized_subcube, pointsInDomain);
+}
+
+
+std::tuple<std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>, std::vector<Point_2D>, int> extract_subsquare_points(
+    const std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& P_with_indices_periodized,
+    const std::vector<Point_2D>& V_with_indices_periodized,
+    int subdomainNumber,
+    int totalSubdomains,
+    double SLICE_SIZE,
+    const std::tuple<double, double, double, double, double, double>& DOMAIN_SIZE) {
+
+    int squareRoot = std::sqrt(totalSubdomains);
+    if (squareRoot * squareRoot != totalSubdomains) {
+        throw std::invalid_argument("totalSubdomains must be a perfect square.");
+    }
+
+    if (subdomainNumber < 0 || subdomainNumber >= totalSubdomains) {
+        throw std::invalid_argument("subdomainNumber must be between 0 and totalSubdomains - 1.");
+    }
+
+    // Compute subdomain coordinates
+    int xSub = subdomainNumber % squareRoot;
+    int ySub = subdomainNumber / squareRoot;
+
+    double subdomainSizeX = (std::get<1>(DOMAIN_SIZE) - std::get<0>(DOMAIN_SIZE)) / squareRoot;
+    double subdomainSizeY = (std::get<3>(DOMAIN_SIZE) - std::get<2>(DOMAIN_SIZE)) / squareRoot;
+
+    // Compute subdomain limits
+    double xMin = std::get<0>(DOMAIN_SIZE) + xSub * subdomainSizeX;
+    double xMax = xMin + subdomainSizeX;
+    double yMin = std::get<2>(DOMAIN_SIZE) + ySub * subdomainSizeY;
+    double yMax = yMin + subdomainSizeY;
+
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_periodized_subsquare;
+    std::vector<Point_2D> V_with_indices_periodized_subsquare;
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_extended;
+    std::vector<Point_2D> V_with_indices_extended;
+
+    int pointsInDomain = 0;
+
+    for (std::size_t i = 0; i < P_with_indices_periodized.size(); ++i) {
+        const Point_2D& p = P_with_indices_periodized[i].first;
+        bool inDomain = p.x() >= xMin && p.x() <= xMax && p.y() >= yMin && p.y() <= yMax;
+        bool inExtendedDomain = p.x() >= xMin - SLICE_SIZE && p.x() <= xMax + SLICE_SIZE && p.y() >= yMin - SLICE_SIZE && p.y() <= yMax + SLICE_SIZE;
+
+        if (inDomain) {
+            P_with_indices_periodized_subsquare.push_back(std::make_pair(p, std::make_pair(pointsInDomain, P_with_indices_periodized[i].second.second)));
+            V_with_indices_periodized_subsquare.push_back(V_with_indices_periodized[i]);
+            pointsInDomain++;
+        } else if (inExtendedDomain) {
+            P_with_indices_extended.push_back(std::make_pair(p, std::make_pair(pointsInDomain, P_with_indices_periodized[i].second.second)));
+            V_with_indices_extended.push_back(V_with_indices_periodized[i]);
+        }
+    }
+
+    // Append extended points after the inDomain points
+    P_with_indices_periodized_subsquare.insert(P_with_indices_periodized_subsquare.end(), P_with_indices_extended.begin(), P_with_indices_extended.end());
+    V_with_indices_periodized_subsquare.insert(V_with_indices_periodized_subsquare.end(), V_with_indices_extended.begin(), V_with_indices_extended.end());
+
+    // Fix indices for the points in the extended domain
+    for (std::size_t i = pointsInDomain; i < P_with_indices_periodized_subsquare.size(); ++i) {
+        P_with_indices_periodized_subsquare[i].second.first = i;
+    }
+
+    return std::make_tuple(P_with_indices_periodized_subsquare, V_with_indices_periodized_subsquare, pointsInDomain);
 }
 
 
@@ -932,6 +1116,137 @@ std::tuple<std::vector<std::pair<Point, std::pair<std::size_t, std::size_t>>>, s
 
 
     return std::make_tuple(P_with_indices_periodized_subcube, V_with_indices_periodized_subcube, pointsInDomain, index); // !!!!!!!!!!!!!! a changer
+}
+
+
+std::tuple<std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>, std::vector<Point_2D>, int, int> read_points_velocity_with_indices_from_binary_file_periodize_extract_subsquare(
+    const std::string& filename, 
+    const std::string& position_suffix, 
+    const std::string& velocity_suffix, 
+    int subdomainNumber,
+    int totalSubdomains,
+    double SLICE_SIZE,
+    const std::tuple<double, double, double, double, double, double>& DOMAIN_SIZE
+) {
+
+    std::cout << "READ DATA WITH INDICES FROM : " << filename << std::endl;
+
+    std::string posFile = filename + position_suffix;
+    std::string velFile = filename + velocity_suffix;
+    
+    std::ifstream pos_input_file(posFile, std::ios::binary);
+    std::ifstream vel_input_file(velFile, std::ios::binary);
+
+    if (!pos_input_file || !vel_input_file) {
+        std::cerr << "Erreur lors de l'ouverture du fichier " << filename << std::endl;
+        return std::make_tuple(std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>(), std::vector<Point_2D>(), 0, 0);
+    }
+
+    int squareRoot = std::sqrt(totalSubdomains);
+    if (squareRoot * squareRoot != totalSubdomains) {
+        throw std::invalid_argument("totalSubdomains must be a perfect square.");
+    }
+
+    if (subdomainNumber < 0 || subdomainNumber >= totalSubdomains) {
+        throw std::invalid_argument("subdomainNumber must be between 0 and totalSubdomains - 1.");
+    }
+
+    // Compute subdomain coordinates
+    int xSub = subdomainNumber % squareRoot;
+    int ySub = subdomainNumber / squareRoot;
+
+    double xsubdomainSize = (std::get<1>(DOMAIN_SIZE) - std::get<0>(DOMAIN_SIZE)) / squareRoot;
+    double ysubdomainSize = (std::get<3>(DOMAIN_SIZE) - std::get<2>(DOMAIN_SIZE)) / squareRoot;
+
+    // Compute subdomain limits
+    double xMin = std::get<0>(DOMAIN_SIZE) + xSub * xsubdomainSize;
+    double xMax = xMin + xsubdomainSize;
+    double yMin = std::get<2>(DOMAIN_SIZE) + ySub * ysubdomainSize;
+    double yMax = yMin + ysubdomainSize;
+
+    int pointsInDomain = 0;
+    std::array<int, 3> range = { -1, 0, 1 };
+
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_periodized_subsquare;
+    std::vector<Point_2D> V_with_indices_periodized_subsquare;
+    std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>> P_with_indices_extended;
+    std::vector<Point_2D> V_with_indices_extended;
+
+    std::size_t index = 0;
+    while (pos_input_file && vel_input_file) {
+        double px, py, vx, vy;
+
+        // Read position and velocity
+        pos_input_file.read(reinterpret_cast<char*>(&px), sizeof(double));
+        pos_input_file.read(reinterpret_cast<char*>(&py), sizeof(double));
+        
+        vel_input_file.read(reinterpret_cast<char*>(&vx), sizeof(double));
+        vel_input_file.read(reinterpret_cast<char*>(&vy), sizeof(double));
+
+        if (pos_input_file && vel_input_file) {
+            px = std::fmod(px, std::get<1>(DOMAIN_SIZE)); // Périodicité en x
+            py = std::fmod(py, std::get<3>(DOMAIN_SIZE)); // Périodicité en y
+            const Point_2D& p = Point_2D(px, py);
+
+            bool inDomain;
+            if (xSub == squareRoot - 1) { // Dernier sous-domaine en x
+                inDomain = p.x() >= xMin && p.x() <= xMax;
+            } else {
+                inDomain = p.x() >= xMin && p.x() < xMax;
+            }
+
+            if (ySub == squareRoot - 1) { // Dernier sous-domaine en y
+                inDomain = inDomain && p.y() >= yMin && p.y() <= yMax;
+            } else {
+                inDomain = inDomain && p.y() >= yMin && p.y() < yMax;
+            }
+
+            bool inExtendedDomain = p.x() >= xMin - SLICE_SIZE && p.x() <= xMax + SLICE_SIZE &&
+                                    p.y() >= yMin - SLICE_SIZE && p.y() <= yMax + SLICE_SIZE;
+
+            if (inDomain) {
+                P_with_indices_periodized_subsquare.push_back(std::make_pair(p, std::make_pair(pointsInDomain, index)));
+                V_with_indices_periodized_subsquare.push_back(Point_2D(vx, vy));
+                pointsInDomain++;
+            } else if (inExtendedDomain) {
+                P_with_indices_extended.push_back(std::make_pair(p, std::make_pair(pointsInDomain, index)));
+                V_with_indices_extended.push_back(Point_2D(vx, vy));
+            }
+
+            for (int i : range) {
+                for (int j : range) {
+                    if (abs(i) + abs(j) != 0) {
+                        Point_2D shifted_point = Point_2D(px + i * TWO_PI, py + j * TWO_PI);
+                        bool inExtendedDomainPeriodic = shifted_point.x() >= xMin - SLICE_SIZE && shifted_point.x() <= xMax + SLICE_SIZE &&
+                                                        shifted_point.y() >= yMin - SLICE_SIZE && shifted_point.y() <= yMax + SLICE_SIZE;
+
+                        if (shifted_point.x() >= std::get<0>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.x() <= std::get<1>(DOMAIN_SIZE) + SLICE_SIZE &&
+                            shifted_point.y() >= std::get<2>(DOMAIN_SIZE) - SLICE_SIZE && shifted_point.y() <= std::get<3>(DOMAIN_SIZE) + SLICE_SIZE &&
+                            inExtendedDomainPeriodic) {
+
+                            P_with_indices_extended.push_back(std::make_pair(shifted_point, std::make_pair(pointsInDomain, index)));
+                            V_with_indices_extended.push_back(Point_2D(vx, vy));
+                        }
+                    }
+                }
+            }
+            ++index;
+        }
+    }
+
+    pos_input_file.close();
+    vel_input_file.close();
+
+    // Append extended points after the inDomain points
+    P_with_indices_periodized_subsquare.insert(P_with_indices_periodized_subsquare.end(), P_with_indices_extended.begin(), P_with_indices_extended.end());
+    V_with_indices_periodized_subsquare.insert(V_with_indices_periodized_subsquare.end(), V_with_indices_extended.begin(), V_with_indices_extended.end());
+
+    // Fix indices for the points in the extended domain
+    for (std::size_t i = pointsInDomain; i < P_with_indices_periodized_subsquare.size(); ++i) {
+        P_with_indices_periodized_subsquare[i].second.first = i;
+    }
+
+    return std::make_tuple(P_with_indices_periodized_subsquare, V_with_indices_periodized_subsquare, pointsInDomain, index);
 }
 
 
@@ -1148,6 +1463,22 @@ void compute_particle_velocity_test_function(const std::vector<std::pair<Point, 
         double u_z = std::cos(x) * std::cos(y) * std::sin(z);
 
         velocity_with_indices.push_back(Point(u_x, u_y, u_z));
+    }
+}
+
+
+void compute_particle_velocity_test_function_2D(const std::vector<std::pair<Point_2D, std::pair<std::size_t, std::size_t>>>& points_with_indices, std::vector<Point_2D>& velocity_with_indices) {
+    velocity_with_indices.reserve(points_with_indices.size());
+
+    for (const auto& point_with_index : points_with_indices) {
+        const Point_2D& point = point_with_index.first;
+        double x = point.x();
+        double y = point.y();
+
+        double u_x = std::sin(x) * std::cos(y);
+        double u_y = std::cos(x) * std::sin(y);
+
+        velocity_with_indices.push_back(Point_2D(u_x, u_y));
     }
 }
 

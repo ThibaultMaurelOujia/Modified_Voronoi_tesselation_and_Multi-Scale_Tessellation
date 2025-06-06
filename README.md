@@ -33,6 +33,10 @@ This code is developed to be built and run on **Linux** and **macOS** machines. 
 - **OpenMP**: For shared-memory parallelism.
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0674476 (Mettre en ligne : corrections et mises à jour du code MoVoTes et du README)
 ## Compilation and Execution
 
 To compile and run the code in **Release** mode, follow these steps:
@@ -51,6 +55,7 @@ Navigate to the project directory and create a new build directory:
 
 ```bash
 cd Modified_Voronoi_tesselation_and_Multi-Scale_Tessellation
+rm -fr build
 mkdir build
 cd build
 ```
@@ -64,6 +69,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 Compile the project:
 
 ```bash
+cmake --build . --target clean
 cmake --build . --config Release
 ```
 
