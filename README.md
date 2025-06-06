@@ -33,9 +33,6 @@ This code is developed to be built and run on **Linux** and **macOS** machines. 
 - **OpenMP**: For shared-memory parallelism.
 
 
-
-Voici la section “Compilation and Execution” de votre README.md révisée pour une meilleure clarté et formatée correctement en Markdown :
-
 ## Compilation and Execution
 
 To compile and run the code in **Release** mode, follow these steps:
