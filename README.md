@@ -33,10 +33,7 @@ This code is developed to be built and run on **Linux** and **macOS** machines. 
 - **OpenMP**: For shared-memory parallelism.
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 0674476 (Mettre en ligne : corrections et mises à jour du code MoVoTes et du README)
 ## Compilation and Execution
 
 To compile and run the code in **Release** mode, follow these steps:
