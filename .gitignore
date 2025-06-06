@@ -1,1 +1,38 @@
+# Ignorer le dossier de build principal
 MoVoTes/build/
+
+# Ignorer d'éventuels dossiers de build anciens ou alternatifs
+MoVoTes/build_OLD/
+
+# Fichiers générés par CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Objets compilés et exécutables
+*.o
+*.obj
+*.exe
+*.out
+
+# Dossiers de génération sur d'autres configurations
+build/
+_build/
+Debug/
+Release/
+
+# Fichiers temporaires et logs
+*.log
+*.tmp
+*.swp
+
+# Fichiers MacOS
+.DS_Store
+
+# Cibles spécifiques à l’IDE (si vous en générez)
+*.idea/
+*.vscode/
+*.sublime-project
+*.sublime-workspace
+
